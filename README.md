@@ -72,3 +72,7 @@ Edit
 | `tests/`        | Test files for logic, routes, and edge cases          |
 | `.env`          | Store secrets like API keys securely                  |
 | `run.py`        | Starts the app using `uvicorn`                        |
+
+## Assets
+Binary image assets were converted to Base64 text files for compatibility with environments that restrict binary content. To restore them, decode the `*.b64.txt` files using `base64 -d` and save with the original filename.
+
