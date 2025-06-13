@@ -3,15 +3,19 @@ from typing import Dict, List, Any, Optional
 import requests
 from datetime import datetime
 from urllib.parse import urlencode, quote
-from .token_storage import TokenStorage
+from app.services.token_storage import TokenStorage
 
 class MeetupHandler:
     """Handler for Meetup API integration"""
     
     def __init__(self):
-        self.client_id = os.getenv('MEETUP_KEY')
-        self.client_secret = os.getenv('MEETUP_SECRET')
-        self.redirect_uri = os.getenv('MEETUP_REDIRECT_URI', 'http://localhost:3000/oauth/callback')
+        self.client_id = os.getenv('MEETUP_KEY').strip() if os.getenv('MEETUP_KEY') else None
+        self.client_secret = os.getenv('MEETUP_SECRET').strip() if os.getenv('MEETUP_SECRET') else None
+        # Redirect URI must be a public URL registered with Meetup, not localhost
+        # For development, use a service like ngrok or a proper development domain
+        self.redirect_uri = os.getenv('MEETUP_REDIRECT_URI')
+        if not self.redirect_uri:
+            raise ValueError("MEETUP_REDIRECT_URI must be set to a registered public URL")
         self.token_storage = TokenStorage()
         
         if not all([self.client_id, self.client_secret, self.redirect_uri]):
@@ -41,14 +45,12 @@ class MeetupHandler:
 
     def get_access_token(self, code: str) -> Dict[str, str]:
         """Exchange authorization code for access token"""
-        # URL encode the redirect URI for the token request
-        encoded_redirect = quote(self.redirect_uri, safe='')
-        
+        # Do NOT URL encode the redirect URI for the token request (send as plain string)
         data = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
             'grant_type': 'authorization_code',
-            'redirect_uri': encoded_redirect,
+            'redirect_uri': self.redirect_uri,
             'code': code
         }
         
@@ -57,20 +59,34 @@ class MeetupHandler:
             'Content-Type': 'application/x-www-form-urlencoded'
         }
         
-        print(f"Requesting access token with data: {data}")
+        print("\n=== Token Exchange Debug Info ===")
+        print(f"Token URL: {self.token_url}")
+        print(f"Request Headers: {headers}")
+        print(f"Request Data:")
+        print(f"  - client_id: {self.client_id[:4]}...{self.client_id[-4:]}")
+        print(f"  - client_secret: {self.client_secret[:4]}...{self.client_secret[-4:]}")
+        print(f"  - grant_type: {data['grant_type']}")
+        print(f"  - redirect_uri: {data['redirect_uri']}")
+        print(f"  - code: {code[:10]}...")
         
+        url = f"{self.token_url}?{urlencode(data)}"
         response = requests.post(
-            self.token_url,
+            url,
             data=data,
             headers=headers
         )
         
+        print(f"\nResponse Status: {response.status_code}")
+        print(f"Response Headers: {dict(response.headers)}")
+        print(f"Response Body: {response.text}")
+        
         if response.status_code != 200:
             error_detail = response.json() if response.text else str(response)
-            print(f"Token request failed. Response: {error_detail}")
+            print(f"\nToken request failed. Response: {error_detail}")
             raise Exception(f"Failed to get access token: {error_detail}")
         
         token_data = response.json()
+        print("\nToken exchange successful!")
         self.token_storage.save_token("meetup", token_data)
         return token_data
 

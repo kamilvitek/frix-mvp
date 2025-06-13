@@ -68,7 +68,7 @@ async def meetup_callback(
     
     try:
         # Exchange the code for an access token
-        token_data = meetup.get_access_token(code=code, redirect_uri=meetup.redirect_uri)
+        token_data = meetup.get_access_token(code=code)
         
         # Store the token
         token_storage.save_token("meetup", token_data)

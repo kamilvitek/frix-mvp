@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse, JSONResponse
-from ..services.meetup import MeetupHandler
+from app.services.meetup import MeetupHandler
 import os
+import json
+from datetime import datetime
 
 router = APIRouter()
 meetup_handler = MeetupHandler()
@@ -15,7 +17,7 @@ async def test_config():
         "client_id": os.getenv('MEETUP_KEY', '').strip(),
         "client_id_length": len(os.getenv('MEETUP_KEY', '').strip()),
         "client_secret_set": bool(os.getenv('MEETUP_SECRET')),
-        "redirect_uri": os.getenv('MEETUP_REDIRECT_URI', 'http://localhost:8000/oauth/callback')
+        "redirect_uri": os.getenv('MEETUP_REDIRECT_URI')
     }
     return config
 
@@ -40,16 +42,19 @@ async def oauth_callback(request: Request, code: str = None, error: str = None, 
     """
     Handle the OAuth callback from Meetup
     """
+    print("\n=== OAuth Callback Received ===")
+    print(f"Timestamp: {datetime.now().isoformat()}")
+    
     # Log all query parameters for debugging
     query_params = dict(request.query_params)
-    print(f"\nReceived callback with params: {query_params}")
-    print(f"Headers: {dict(request.headers)}")
+    print(f"Query Parameters: {json.dumps(query_params, indent=2)}")
+    print(f"Headers: {json.dumps(dict(request.headers), indent=2)}")
 
     if error:
         error_msg = f"Authorization failed: {error}"
         if error_description:
             error_msg += f" - {error_description}"
-        print(f"OAuth Error: {error_msg}")
+        print(f"❌ OAuth Error: {error_msg}")
         return JSONResponse(
             status_code=400,
             content={
@@ -60,7 +65,7 @@ async def oauth_callback(request: Request, code: str = None, error: str = None, 
         )
     
     if not code:
-        print("No authorization code received in callback")
+        print("❌ No authorization code received in callback")
         return JSONResponse(
             status_code=400,
             content={
@@ -71,16 +76,27 @@ async def oauth_callback(request: Request, code: str = None, error: str = None, 
         )
     
     try:
+        print(f"✓ Received authorization code: {code[:10]}...")
         # Exchange the code for an access token
         token_data = meetup_handler.get_access_token(code)
-        print("Successfully obtained access token")
+        print("✓ Successfully obtained access token")
+        print(f"Token type: {token_data.get('token_type')}")
+        
+        # Verify token was stored
+        stored_token = meetup_handler.token_storage.get_token("meetup")
+        if stored_token:
+            print("✓ Token successfully stored")
+        else:
+            print("❌ Token storage verification failed")
+            
         return JSONResponse(content={
             "message": "Authentication successful",
             "token_type": token_data.get("token_type"),
+            "token_stored": bool(stored_token),
             "received_params": query_params
         })
     except Exception as e:
-        print(f"Error exchanging code for token: {str(e)}")
+        print(f"❌ Error exchanging code for token: {str(e)}")
         return JSONResponse(
             status_code=400,
             content={
