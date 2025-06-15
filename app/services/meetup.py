@@ -69,7 +69,6 @@ class MeetupHandler:
         print(f"  - redirect_uri: {data['redirect_uri']}")
         print(f"  - code: {code[:10]}...")
         
-        url = f"{self.token_url}?{urlencode(data)}"
         response = requests.post(
             url,
             data=data,
