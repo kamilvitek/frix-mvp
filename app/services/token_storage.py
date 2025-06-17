@@ -57,4 +57,5 @@ class TokenStorage:
         if os.path.exists(token_file):
             os.remove(token_file)
             return True
-        return False 
+        return False
+

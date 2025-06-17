@@ -45,7 +45,7 @@ async def meetup_login():
 
 @router.get("/oauth/callback")
 async def meetup_callback(
-    code: Optional[str] = None,
+    code: Optional[str] = None,         
     error: Optional[str] = None,
     error_description: Optional[str] = None
 ):

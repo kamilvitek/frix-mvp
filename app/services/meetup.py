@@ -4,6 +4,9 @@ import requests
 from datetime import datetime
 from urllib.parse import urlencode, quote
 from app.services.token_storage import TokenStorage
+import json
+from typing import Dict, List, Any
+
 
 class MeetupHandler:
     """Handler for Meetup API integration"""
@@ -43,6 +46,27 @@ class MeetupHandler:
         print(f"Generated authorization URL: {auth_url}")
         return auth_url
 
+    def manual_auth_flow(self) -> Dict[str, str]:
+        """
+        Run the OAuth flow manually by getting user input for the authorization code.
+        Returns the token data if successful.
+        """
+        # Step 1: Get and display the authorization URL
+        auth_url = self.get_authorization_url()
+        print("\n1. Open this URL in your browser:")
+        print(auth_url)
+        
+        # Step 2: Get the code from user input
+        print("\n2. After authorizing, copy the 'code' parameter from the redirect URL")
+        code = input("Enter the authorization code: ").strip()
+        
+        if not code:
+            raise ValueError("Authorization code cannot be empty")
+            
+        # Step 3: Exchange the code for a token
+        print("\n3. Exchanging code for token...")
+        return self.get_access_token(code)
+
     def get_access_token(self, code: str) -> Dict[str, str]:
         """Exchange authorization code for access token"""
         # Do NOT URL encode the redirect URI for the token request (send as plain string)
@@ -70,7 +94,7 @@ class MeetupHandler:
         print(f"  - code: {code[:10]}...")
         
         response = requests.post(
-            url,
+            self.token_url,
             data=data,
             headers=headers
         )
@@ -88,80 +112,6 @@ class MeetupHandler:
         print("\nToken exchange successful!")
         self.token_storage.save_token("meetup", token_data)
         return token_data
-
-    def find_related_events(self, customer_event) -> List[Dict[Any, Any]]:
-        """
-        Find events related to the customer event based on:
-        - Location (same city/area)
-        - Category/Topic
-        - Date range (around the customer event date)
-        """
-        token_data = self.token_storage.get_token("meetup")
-        if not token_data or 'access_token' not in token_data:
-            raise ValueError("Please authenticate first")
-            
-        headers = {
-            'Authorization': f"Bearer {token_data['access_token']}",
-            'Accept': 'application/json'
-        }
-        
-        # Extract location from customer event
-        location = customer_event.country if hasattr(customer_event, 'country') else None
-        if not location:
-            raise ValueError("Customer event must have a location")
-            
-        # Build search parameters
-        params = {
-            'location': location,
-            'radius': '50km',  # Default radius
-            'page': 20
-        }
-        
-        # Add category if available
-        if hasattr(customer_event, 'category') and customer_event.category:
-            params['topic_category'] = customer_event.category
-            
-        # Add date range if available
-        if hasattr(customer_event, 'start') and customer_event.start:
-            # Search for events around the customer event date
-            params['start_date_range'] = customer_event.start
-            
-        try:
-            response = requests.get(
-                f"{self.api_base_url}/find/upcoming_events",
-                headers=headers,
-                params=params
-            )
-            
-            if response.status_code == 200:
-                events = response.json().get('events', [])
-                return self._process_events(events)
-            else:
-                print(f"Error searching events: {response.text}")
-                return []
-                
-        except Exception as e:
-            print(f"Error finding related events: {str(e)}")
-            return []
-            
-    def _process_events(self, events: List[Dict]) -> List[Dict]:
-        """Process and format event data"""
-        processed_events = []
-        for event in events:
-            processed_event = {
-                'id': event.get('id'),
-                'name': event.get('name'),
-                'description': event.get('description'),
-                'start_time': event.get('local_date', '') + ' ' + event.get('local_time', ''),
-                'venue': event.get('venue', {}),
-                'group': event.get('group', {}),
-                'link': event.get('link'),
-                'attendance_count': event.get('yes_rsvp_count', 0),
-                'is_online': event.get('is_online_event', False),
-                'category': event.get('group', {}).get('category', {}).get('name', '')
-            }
-            processed_events.append(processed_event)
-        return processed_events
 
     def test_connection(self) -> Dict[str, Any]:
         """
@@ -200,3 +150,5 @@ class MeetupHandler:
                 "status": "error",
                 "message": f"Connection test failed: {str(e)}"
             }
+    
+    

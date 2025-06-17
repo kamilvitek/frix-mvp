@@ -104,4 +104,4 @@ async def oauth_callback(request: Request, code: str = None, error: str = None, 
                 "received_params": query_params,
                 "headers": dict(request.headers)
             }
-        ) 
+        )
