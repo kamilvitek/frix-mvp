@@ -1,10 +1,9 @@
 from typing import List, Dict, Any
 from datetime import datetime
-from app.services.eventbrite import EventbriteHandler
 
 class ConflictAnalyzer:
-    def __init__(self, eventbrite_handler: EventbriteHandler):
-        self.eventbrite_handler = eventbrite_handler
+    def __init__(self):
+        pass
     
     def analyze_conflicts(self, customer_event) -> Dict[str, Any]:
         """
@@ -13,7 +12,7 @@ class ConflictAnalyzer:
         2. Calculating conflict scores based on various factors
         """
         # Get related events from Eventbrite
-        related_events = self.eventbrite_handler.search_related_events(customer_event)
+        related_events = []
         
         # Calculate conflicts for each event
         conflicts = []
@@ -50,3 +49,4 @@ class ConflictAnalyzer:
         # 5. Target audience overlap
         
         return score 
+ 

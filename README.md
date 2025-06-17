@@ -20,7 +20,7 @@ Frix responds with:
 📦 Tech Stack
     Frontend: Next.js + TailwindCSS
     Backend: Python (FastAPI)
-    Data Sources: Eventbrite, Ticketmaster, PredictHQ, Open Data
+    Data Sources: Ticketmaster, PredictHQ, Open Data
     Conflict Engine: Clustering + Scoring logic (custom)
 
 ✨ Core Features
@@ -54,10 +54,9 @@ Edit
 }
 
 🛠️ Setup Notes
-    Get API keys for Eventbrite, PredictHQ, etc.
+    Get API keys for PredictHQ, etc.
     Store them in .env.local
     .env
-        EVENTBRITE_TOKEN=your_token
         PREDICT_HQ_API=your_token
 
 

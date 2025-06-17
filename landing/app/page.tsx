@@ -5,7 +5,7 @@ export default function Home() {
       <section className="flex flex-col md:flex-row items-center justify-between gap-8 container mx-auto px-4 py-20">
         <div className="md:w-1/2 space-y-4 text-center md:text-left">
           <h1 className="text-4xl font-bold">Plan Events with Confidence</h1>
-          <p className="text-lg text-gray-600">Find the best dates and avoid scheduling conflicts.</p>
+          <p className="text-lg text-black">Find the best dates and avoid scheduling conflicts.</p>
         </div>
         <form className="md:w-1/2 bg-white shadow rounded p-6 space-y-4 w-full">
           <h2 className="text-xl font-semibold">Check Your Dates</h2>
@@ -30,7 +30,7 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold mb-8">How It Works</h2>
           <div className="grid md:grid-cols-3 gap-8">
@@ -65,10 +65,10 @@ export default function Home() {
       {/* Footer */}
       <footer className="mt-auto py-8 bg-gray-800 text-gray-100 text-center space-y-2">
         <p>
-          Contact: <a className="underline" href="mailto:info@example.com">info@example.com</a>
+          Contact: <a className="underline" href="mailto:kamil@kamilvitek.cz">kamil@kamilvitek.cz</a>
         </p>
         <p>
-          <a className="underline" href="https://www.linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a className="underline" href="https://www.linkedin.com/in/kamil-vitek" target="_blank" rel="noopener noreferrer">LinkedIn</a>
         </p>
       </footer>
     </div>
