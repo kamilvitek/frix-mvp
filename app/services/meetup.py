@@ -150,5 +150,20 @@ class MeetupHandler:
                 "status": "error",
                 "message": f"Connection test failed: {str(e)}"
             }
-    
-    
+
+if __name__ == "__main__":
+    # Create an instance and run the auth flow
+    handler = MeetupHandler()
+    try:
+        print("\nStarting Meetup OAuth Authentication Flow...")
+        token_data = handler.manual_auth_flow()
+        print("\nAuthentication successful!")
+        print("Token has been saved automatically.")
+        
+        # Test the connection
+        test_result = handler.test_connection()
+        print(f"\nConnection test: {test_result['message']}")
+    except Exception as e:
+        print(f"\nError during authentication: {e}")
+
+

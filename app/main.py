@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import meetup
-from .routes import oauth, events
+from app.routes import oauth
 
 app = FastAPI(title="Frix MVP")
 
@@ -18,7 +18,6 @@ app.add_middleware(
 # Include routers
 app.include_router(meetup.router, tags=["auth"])
 app.include_router(oauth.router)
-app.include_router(events.router, prefix="/api", tags=["events"])
 
 # Health check endpoint
 @app.get("/health")
